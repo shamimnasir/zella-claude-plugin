@@ -1,0 +1,3412 @@
+[
+  {
+    "title": "Current video",
+    "inputSchema": {
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Current video",
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "idempotentHint": true
+    },
+    "name": "current_video",
+    "description": "Say which video is open in Zella and whether it has finished loading."
+  },
+  {
+    "description": "Get the result of a long task. Long tools answer with a job_id while they work; pass it here. Waits up to 45 seconds before answering.",
+    "name": "check_progress",
+    "title": "Check progress",
+    "inputSchema": {
+      "required": [
+        "job_id"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "description": "The job_id from the earlier answer"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Check progress"
+    }
+  },
+  {
+    "name": "stop_current_task",
+    "annotations": {
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Stop current task"
+    },
+    "description": "Stop what Zella is doing for Claude right now, including an export.",
+    "inputSchema": {
+      "properties": {},
+      "type": "object"
+    },
+    "title": "Stop current task"
+  },
+  {
+    "description": "See the video as it looks NOW, with every edit applied (captions, looks, zooms, blurs, titles, background): returns a JPEG of one frame. Use it after an edit to check the result before telling the person it is done.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "max_size": {
+          "description": "Longest side in pixels, 256 to 1280 (default 960)",
+          "type": "integer"
+        },
+        "time": {
+          "type": "number",
+          "description": "Seconds into the edited video (default: the playhead)"
+        }
+      }
+    },
+    "annotations": {
+      "title": "Get frame",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true
+    },
+    "name": "get_frame",
+    "title": "Get frame"
+  },
+  {
+    "description": "See several moments at once: returns ONE contact-sheet image of evenly spaced frames from the edited video, labelled with their times. Use it to review a whole edit (pacing, captions, look) in one call.",
+    "name": "get_filmstrip",
+    "title": "Get filmstrip",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "end": {
+          "type": "number",
+          "description": "To (seconds, default the end)"
+        },
+        "count": {
+          "type": "integer",
+          "description": "How many frames, 2 to 12 (default 6)"
+        },
+        "start": {
+          "description": "From (seconds, default 0)",
+          "type": "number"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "title": "Get filmstrip",
+      "destructiveHint": false
+    }
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "readOnlyHint": true,
+      "title": "Get project state"
+    },
+    "description": "Return the full editor state as JSON: duration, currentTime, platform, clips, segments (with start/end times), splitPoints, deletedRanges, audioOverlays, imageOverlays, titles, callouts, zoom blocks, transitions, caption count, main-track volume, selected segment, and reframe mode. Call this FIRST to ground any action (e.g. to resolve 'clip 2' or find silent gaps).",
+    "name": "get_project_state",
+    "inputSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "title": "Get project state"
+  },
+  {
+    "name": "get_transcript",
+    "title": "Get transcript",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "max_words": {
+          "type": "integer",
+          "description": "Cap the number of words returned (default 600)"
+        }
+      },
+      "required": []
+    },
+    "annotations": {
+      "idempotentHint": true,
+      "destructiveHint": false,
+      "readOnlyHint": true,
+      "title": "Get transcript",
+      "openWorldHint": false
+    },
+    "description": "Return the spoken-word transcript with per-word timings as JSON [{word,start,end,filler}]. Use this to resolve content references ('the part where I talk about pricing', 'my intro'), then act with delete_time_range / add_split / add_captions. Requires captions/transcription; if empty, call add_captions first."
+  },
+  {
+    "annotations": {
+      "title": "Find transcript",
+      "idempotentHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Words/phrase to find in the speech"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    },
+    "name": "find_transcript",
+    "description": "Search the spoken transcript for a phrase and return every matching span as [{start,end,text}] (case-insensitive, punctuation-loose). Use to locate 'the sentence about X' and then delete_time_range / add_split / seek_to_time. Requires transcription (call add_captions first if empty).",
+    "title": "Find transcript"
+  },
+  {
+    "inputSchema": {
+      "properties": {
+        "category": {
+          "type": "string",
+          "description": "Which catalog to list",
+          "enum": [
+            "look_presets",
+            "transitions",
+            "blend_modes",
+            "title_styles",
+            "caption_presets",
+            "callout_kinds",
+            "platforms",
+            "color_adjustments",
+            "special_effects",
+            "backgrounds"
+          ]
+        }
+      },
+      "type": "object",
+      "required": [
+        "category"
+      ]
+    },
+    "title": "List options",
+    "name": "list_options",
+    "description": "List the valid values for a category, so you can pick a correct argument for other tools. Use before guessing names.",
+    "annotations": {
+      "title": "List options",
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "readOnlyHint": true,
+      "idempotentHint": true
+    }
+  },
+  {
+    "title": "Describe frame",
+    "name": "describe_frame",
+    "description": "Look at the video frame at a given time and return a text description: detected faces (count + whether centered), scene/object labels, and overall brightness (dark/normal/bright). Use to answer 'is my face centered?', 'is it too dark?', or to decide a fix. On-device (no upload). It does NOT read text: for on-screen text use find_text_on_screen, and to hide a token/key/password use blur_sensitive_text.",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "title": "Describe frame",
+      "openWorldHint": false
+    },
+    "inputSchema": {
+      "required": [],
+      "properties": {
+        "time": {
+          "type": "number",
+          "description": "Time in seconds; omit for playhead"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "description": "Read the text visible in the video (on-device OCR, no upload) at one time or across a range, and return each line with its time and box (x, y = centre, w, h, normalized 0-1, top-left origin, the same numbers add_callout takes). Pass query to return only matching lines (case-insensitive, tolerant of OCR typos). Secret-looking values (keys, tokens, passwords, emails) come back MASKED. Use it to locate on-screen text; to hide sensitive text use blur_sensitive_text.",
+    "inputSchema": {
+      "required": [],
+      "properties": {
+        "time": {
+          "type": "number",
+          "description": "One frame at this time (default: playhead)"
+        },
+        "start": {
+          "type": "number",
+          "description": "Scan a range from here (sampled about once a second, up to 30 frames)"
+        },
+        "end": {
+          "description": "Range end seconds",
+          "type": "number"
+        },
+        "query": {
+          "description": "Only lines containing this (optional)",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "name": "find_text_on_screen",
+    "title": "Find text on screen",
+    "annotations": {
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Find text on screen",
+      "destructiveHint": false,
+      "readOnlyHint": true
+    }
+  },
+  {
+    "title": "Delete time range",
+    "inputSchema": {
+      "properties": {
+        "start": {
+          "description": "Start seconds",
+          "type": "number"
+        },
+        "end": {
+          "type": "number",
+          "description": "End seconds"
+        }
+      },
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Delete time range",
+      "openWorldHint": false,
+      "idempotentHint": false,
+      "destructiveHint": true
+    },
+    "name": "delete_time_range",
+    "description": "Delete a time range [start,end] in seconds (ripple). The timeline compacts. Reversible via undo."
+  },
+  {
+    "title": "Ripple delete segment",
+    "inputSchema": {
+      "properties": {
+        "segment_index": {
+          "description": "0-based segment index (see get_project_state)",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "segment_index"
+      ],
+      "type": "object"
+    },
+    "description": "Ripple-delete the segment at the given index (0-based). Surrounding clips close the gap. Reversible via undo.",
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Ripple delete segment",
+      "idempotentHint": false,
+      "destructiveHint": true,
+      "openWorldHint": false
+    },
+    "name": "ripple_delete_segment"
+  },
+  {
+    "annotations": {
+      "openWorldHint": false,
+      "title": "Remove silences",
+      "destructiveHint": true,
+      "readOnlyHint": false,
+      "idempotentHint": false
+    },
+    "name": "remove_silences",
+    "title": "Remove silences",
+    "inputSchema": {
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "description": "Scan for blank/silent gaps and remove them all (the classic 'remove dead air'). Confirms before applying. Timeline compacts."
+  },
+  {
+    "name": "remove_filler_words",
+    "description": "Scan for filler words (um, uh, like…) and remove them. Confirms before applying.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "title": "Remove filler words",
+    "annotations": {
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Remove filler words",
+      "destructiveHint": true
+    }
+  },
+  {
+    "description": "Undo the most recent edit (50-level undo stack).",
+    "name": "undo_last_action",
+    "inputSchema": {
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "title": "Undo last action",
+    "annotations": {
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Undo last action",
+      "readOnlyHint": false,
+      "destructiveHint": false
+    }
+  },
+  {
+    "inputSchema": {
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "description": "Redo the action that was just undone.",
+    "title": "Redo last action",
+    "annotations": {
+      "title": "Redo last action",
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false
+    },
+    "name": "redo_last_action"
+  },
+  {
+    "description": "Rename the current project (as it appears in the Library).",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "title": "Set project name",
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "inputSchema": {
+      "required": [
+        "name"
+      ],
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "New project name",
+          "type": "string"
+        }
+      }
+    },
+    "title": "Set project name",
+    "name": "set_project_name"
+  },
+  {
+    "name": "add_captions",
+    "description": "Transcribe the audio and generate a caption track. Waits for transcription to finish.",
+    "annotations": {
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Add captions"
+    },
+    "title": "Add captions",
+    "inputSchema": {
+      "required": [],
+      "properties": {
+        "force": {
+          "type": "boolean",
+          "description": "Re-transcribe even if captions already exist"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "preset": {
+          "enum": [
+            "Word Pop",
+            "Hormozi",
+            "Karaoke",
+            "Pop Box",
+            "Neon Glow",
+            "Clean Minimal",
+            "Beast",
+            "Hero",
+            "Highlighter",
+            "Bounce",
+            "Thumbnail"
+          ],
+          "type": "string",
+          "description": "Caption style preset"
+        }
+      },
+      "required": [
+        "preset"
+      ]
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "title": "Apply caption preset",
+      "idempotentHint": false,
+      "readOnlyHint": false,
+      "openWorldHint": false
+    },
+    "name": "apply_caption_preset",
+    "description": "Switch the caption visual style across the whole track.",
+    "title": "Apply caption preset"
+  },
+  {
+    "description": "Edit one caption line (segment) by index: change text, move (start), retime (start+end), set the emphasized keyword (keyword_word_index, 0-based within the line), or delete. Only the fields you pass change.",
+    "title": "Edit caption",
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Edit caption",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keyword_word_index": {
+          "description": "Emphasize this word (0-based within the line)",
+          "type": "integer"
+        },
+        "start": {
+          "type": "number",
+          "description": "New start seconds"
+        },
+        "index": {
+          "description": "0-based caption-segment index",
+          "type": "integer"
+        },
+        "text": {
+          "description": "Replacement text",
+          "type": "string"
+        },
+        "delete": {
+          "description": "Delete this caption line",
+          "type": "boolean"
+        },
+        "end": {
+          "description": "New end seconds (with start = retime)",
+          "type": "number"
+        }
+      },
+      "required": [
+        "index"
+      ]
+    },
+    "name": "edit_caption"
+  },
+  {
+    "description": "Remove every caption from the video (the reverse of add_captions).",
+    "name": "remove_captions",
+    "title": "Remove captions",
+    "inputSchema": {
+      "required": [],
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Remove captions",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "true=on, false=off",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "description": "Enable or disable background-noise removal on the voice/mic track (keeps the voice).",
+    "title": "Remove noise",
+    "name": "remove_noise",
+    "annotations": {
+      "openWorldHint": false,
+      "title": "Remove noise",
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false
+    }
+  },
+  {
+    "name": "polish_voice",
+    "title": "Polish voice",
+    "description": "Enable or disable voice polishing (HPF, de-ess, compression, loudness normalize).",
+    "inputSchema": {
+      "required": [
+        "enabled"
+      ],
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "true=on, false=off"
+        }
+      }
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Polish voice"
+    }
+  },
+  {
+    "title": "Set voice loudness",
+    "name": "set_voice_loudness",
+    "description": "Set target loudness for voice polishing.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "preset"
+      ],
+      "properties": {
+        "preset": {
+          "type": "string",
+          "enum": [
+            "youtube",
+            "shorts",
+            "podcast"
+          ],
+          "description": "Loudness target"
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Set voice loudness",
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "readOnlyHint": false,
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "title": "Set clip volume"
+    },
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "volume": {
+          "type": "number",
+          "description": "Gain 0.0 (mute) to 1.0 (full)"
+        },
+        "segment_index": {
+          "description": "0-based segment to target; omit for all clips",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "volume"
+      ]
+    },
+    "name": "set_clip_volume",
+    "description": "Set audio volume (0.0–1.0). With segment_index, sets a per-clip override on just that segment (e.g. 'make clip 2 quieter'); without it, sets the global main-track gain for all clips.",
+    "title": "Set clip volume"
+  },
+  {
+    "description": "Apply or remove a conservative auto color/exposure grade.",
+    "name": "auto_enhance",
+    "title": "Auto enhance",
+    "annotations": {
+      "title": "Auto enhance",
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "destructiveHint": false
+    },
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "true=apply, false=revert"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    }
+  },
+  {
+    "title": "Apply look preset",
+    "name": "apply_look_preset",
+    "annotations": {
+      "title": "Apply look preset",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false
+    },
+    "description": "Apply a one-click color/look preset (Teal & Orange, Kodachrome, Film Noir, …) to the clip at the playhead or selected segment.",
+    "inputSchema": {
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "time": {
+          "type": "number",
+          "description": "Time in seconds; omit for playhead"
+        },
+        "name": {
+          "type": "string",
+          "enum": [
+            "Studio Portrait",
+            "Hollywood Glow",
+            "Prime Lens",
+            "Silver Screen",
+            "Sunlit Skin",
+            "Night Interview",
+            "Pop",
+            "Teal & Orange",
+            "Moody Dark",
+            "Warm Cinematic",
+            "Kodachrome",
+            "Kodak 2383",
+            "Fuji Natural",
+            "Matte Fade",
+            "Portra 400",
+            "80s Pastel",
+            "Palm Springs",
+            "Velvia Vivid",
+            "VHS Retro",
+            "Dark Academia",
+            "Y2K Digicam",
+            "Cool Tones",
+            "Bright & Sunny",
+            "Aesthetic Soft",
+            "Teal Shadows",
+            "Soft Natural",
+            "Clean Cream",
+            "Film Noir",
+            "Log Flat",
+            "Skin Warm",
+            "Film Grain",
+            "Golden Hour",
+            "Bleach Bypass",
+            "Espresso",
+            "Color Pop",
+            "Neon Nights",
+            "Soft Glow",
+            "Bright Airy",
+            "Peachy",
+            "Terra Brown",
+            "Retro Halation",
+            "Tokyo Soft",
+            "Punchy",
+            "Warm Print",
+            "Cool Print",
+            "Faded Negative",
+            "Silver Retain",
+            "Cross Process",
+            "Seventies",
+            "Nineties",
+            "Instant Square",
+            "Sepia Letter",
+            "Pine Fog",
+            "Deep Teal",
+            "Ink Shadows",
+            "Overcast",
+            "Pastel Morning",
+            "Clean White",
+            "Blush",
+            "Mint Air",
+            "Mono Punch",
+            "Mono Soft",
+            "Noir Night",
+            "Selenium",
+            "Red Filter",
+            "Blue Hour",
+            "Day for Night",
+            "Desert Heat",
+            "Thriller Green",
+            "Arctic",
+            "Fresh Market",
+            "Bakery",
+            "Citrus",
+            "Berry",
+            "Honey Skin",
+            "Porcelain",
+            "Dewy Glow",
+            "Bronze",
+            "Evergreen",
+            "Deep Sky",
+            "Autumn Leaves",
+            "Coastal",
+            "Cyber Magenta",
+            "Sodium Street",
+            "Moonlight",
+            "Camcorder",
+            "Flash Pop",
+            "Early Digital",
+            "Cyanotype",
+            "Duo Sunset",
+            "Duo Mint",
+            "Duo Rose",
+            "Duo Teal",
+            "Founder Teal & Orange",
+            "Founder Kodak",
+            "Founder Noir"
+          ],
+          "description": "Look preset name"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "inputSchema": {
+      "required": [
+        "name"
+      ],
+      "type": "object",
+      "properties": {
+        "name": {
+          "enum": [
+            "Studio Portrait",
+            "Hollywood Glow",
+            "Prime Lens",
+            "Silver Screen",
+            "Sunlit Skin",
+            "Night Interview",
+            "Pop",
+            "Teal & Orange",
+            "Moody Dark",
+            "Warm Cinematic",
+            "Kodachrome",
+            "Kodak 2383",
+            "Fuji Natural",
+            "Matte Fade",
+            "Portra 400",
+            "80s Pastel",
+            "Palm Springs",
+            "Velvia Vivid",
+            "VHS Retro",
+            "Dark Academia",
+            "Y2K Digicam",
+            "Cool Tones",
+            "Bright & Sunny",
+            "Aesthetic Soft",
+            "Teal Shadows",
+            "Soft Natural",
+            "Clean Cream",
+            "Film Noir",
+            "Log Flat",
+            "Skin Warm",
+            "Film Grain",
+            "Golden Hour",
+            "Bleach Bypass",
+            "Espresso",
+            "Color Pop",
+            "Neon Nights",
+            "Soft Glow",
+            "Bright Airy",
+            "Peachy",
+            "Terra Brown",
+            "Retro Halation",
+            "Tokyo Soft",
+            "Punchy",
+            "Warm Print",
+            "Cool Print",
+            "Faded Negative",
+            "Silver Retain",
+            "Cross Process",
+            "Seventies",
+            "Nineties",
+            "Instant Square",
+            "Sepia Letter",
+            "Pine Fog",
+            "Deep Teal",
+            "Ink Shadows",
+            "Overcast",
+            "Pastel Morning",
+            "Clean White",
+            "Blush",
+            "Mint Air",
+            "Mono Punch",
+            "Mono Soft",
+            "Noir Night",
+            "Selenium",
+            "Red Filter",
+            "Blue Hour",
+            "Day for Night",
+            "Desert Heat",
+            "Thriller Green",
+            "Arctic",
+            "Fresh Market",
+            "Bakery",
+            "Citrus",
+            "Berry",
+            "Honey Skin",
+            "Porcelain",
+            "Dewy Glow",
+            "Bronze",
+            "Evergreen",
+            "Deep Sky",
+            "Autumn Leaves",
+            "Coastal",
+            "Cyber Magenta",
+            "Sodium Street",
+            "Moonlight",
+            "Camcorder",
+            "Flash Pop",
+            "Early Digital",
+            "Cyanotype",
+            "Duo Sunset",
+            "Duo Mint",
+            "Duo Rose",
+            "Duo Teal",
+            "Founder Teal & Orange",
+            "Founder Kodak",
+            "Founder Noir"
+          ],
+          "type": "string",
+          "description": "Look preset name"
+        }
+      }
+    },
+    "description": "Apply one color/look preset to EVERY clip/segment at once (e.g. 'make every clip cinematic'). For a single clip use apply_look_preset instead.",
+    "title": "Apply look to all clips",
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Apply look to all clips",
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": false
+    },
+    "name": "apply_look_to_all_clips"
+  },
+  {
+    "description": "Adjust one color/exposure property of the selected segment (or global if none selected). Ranges: exposure -2…2, brightness -1…1, contrast/saturation/highlights 0…2, temperature 2000…10000K, tint -100…100, shadows -1…1, sharpness/noiseReduction 0…1.",
+    "name": "set_color_adjustment",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "property": {
+          "enum": [
+            "exposure",
+            "brightness",
+            "contrast",
+            "saturation",
+            "temperature",
+            "tint",
+            "highlights",
+            "shadows",
+            "sharpness",
+            "noiseReduction"
+          ],
+          "type": "string",
+          "description": "Which property"
+        },
+        "value": {
+          "description": "New value (see ranges)",
+          "type": "number"
+        }
+      },
+      "required": [
+        "property",
+        "value"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "title": "Set color adjustment",
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "title": "Set color adjustment"
+  },
+  {
+    "description": "The one-tap Auto-Polish pass (same as magic_edit): cuts silences and filler words, removes noise, polishes the voice, adds music. Does NOT add captions. One undo.",
+    "inputSchema": {
+      "properties": {},
+      "type": "object",
+      "required": []
+    },
+    "name": "auto_polish",
+    "annotations": {
+      "idempotentHint": false,
+      "title": "Auto polish",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "title": "Auto polish"
+  },
+  {
+    "inputSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "annotations": {
+      "title": "Make vertical",
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "destructiveHint": false
+    },
+    "name": "make_vertical",
+    "description": "One-click repurpose to 9:16 for Reels / TikTok / Shorts: reframes to vertical, crops to fill, tracks the subject's face, and adds captions.",
+    "title": "Make vertical"
+  },
+  {
+    "name": "set_platform",
+    "annotations": {
+      "title": "Set platform",
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "description": "Set the export target platform / aspect ratio. Accepts the listed names or common aliases (tiktok, youtube, shorts, reels, square…).",
+    "title": "Set platform",
+    "inputSchema": {
+      "required": [
+        "platform"
+      ],
+      "type": "object",
+      "properties": {
+        "platform": {
+          "enum": [
+            "TikTok",
+            "YT Shorts",
+            "IG Reels",
+            "IG Feed",
+            "FB Reels",
+            "Square 1:1",
+            "YouTube",
+            "X / Twitter",
+            "Original"
+          ],
+          "type": "string",
+          "description": "Target platform (e.g. TikTok, YouTube, YT Shorts, IG Reels, Square 1:1)"
+        }
+      }
+    }
+  },
+  {
+    "description": "Face-aware reframe: track the speaker's face through the whole video and PAN the fill crop so they stay framed when exporting to a narrower aspect (TikTok / Shorts / Reels). USE THIS whenever the user asks to keep the face or subject centred, 'in the middle', or in frame after a platform change. Implies fill mode. enable=false clears the tracking (crop returns to centre).",
+    "title": "Auto reframe",
+    "name": "auto_reframe",
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Auto reframe",
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "inputSchema": {
+      "properties": {
+        "enable": {
+          "description": "true (default) = analyse and track the face; false = clear the tracked pan",
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "type": "object"
+    }
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Apply smart zooms",
+      "idempotentHint": false
+    },
+    "name": "apply_smart_zooms",
+    "title": "Apply smart zooms",
+    "inputSchema": {
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "description": "Add punch-in zooms where new phrases start, aimed at the speaker's face. This is the variant for CAMERA footage with no recorded clicks - for Zella screen recordings use auto_zoom_from_cursor instead. Calling it again removes them."
+  },
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Add title",
+      "destructiveHint": false,
+      "readOnlyHint": false
+    },
+    "description": "Add a text title/overlay at a time. Optionally set the text and its letter motion: animation_in (how it enters), animation_loop (while it holds), animation_out (how it leaves), animation_speed.",
+    "name": "add_title",
+    "title": "Add title",
+    "inputSchema": {
+      "required": [
+        "style"
+      ],
+      "type": "object",
+      "properties": {
+        "animation_speed": {
+          "description": "Motion speed 0.25 to 3 (1 = normal)",
+          "type": "number"
+        },
+        "style": {
+          "type": "string",
+          "description": "Title style",
+          "enum": [
+            "Text Card",
+            "Basic Text",
+            "Marker Highlight",
+            "Underline Draw",
+            "Box Trace",
+            "Thumbnail Pop",
+            "Typewriter",
+            "Neon Glow",
+            "Glitch Title",
+            "Bounce",
+            "Blur Reveal",
+            "Slide In",
+            "3D Spin",
+            "Subscribe Reminder",
+            "Follow Me",
+            "Like Button",
+            "Notification Bell",
+            "Social Badge",
+            "Lower Third",
+            "Big Statement",
+            "Minimal Fade",
+            "Credits Roll",
+            "List Card"
+          ]
+        },
+        "animation_in": {
+          "enum": [
+            "fade.whisper",
+            "fade.drift",
+            "fade.ripple",
+            "fade.firefly",
+            "fade.wordbeat",
+            "fade.cascade",
+            "blur.focuspull",
+            "blur.mist",
+            "blur.smoke",
+            "blur.dream",
+            "blur.ghost",
+            "blur.crisp",
+            "scale.popup",
+            "scale.inflate",
+            "scale.shrink",
+            "scale.zoomletters",
+            "scale.squash",
+            "rot.whirl",
+            "rot.tilt",
+            "rot.pinwheel",
+            "rot.hinge",
+            "rot.cartwheel",
+            "flip.up",
+            "flip.cardturn",
+            "flip.fold",
+            "flip.door",
+            "flip.carousel",
+            "flip.leaf",
+            "rise.letters",
+            "rise.fromline",
+            "rise.drop",
+            "rise.glide",
+            "rise.shutter",
+            "rise.zipper",
+            "rise.escalator",
+            "rise.stepup",
+            "spring.balldrop",
+            "spring.jelly",
+            "spring.pop",
+            "spring.boing",
+            "spring.wobble",
+            "spring.rubber",
+            "track.gather",
+            "track.exhale",
+            "track.widefocus",
+            "track.slam",
+            "type.keystrike",
+            "type.caret",
+            "type.cipher",
+            "type.slot",
+            "type.boot",
+            "type.scatter",
+            "type.stamp",
+            "wave.swell",
+            "wave.ripplein",
+            "wave.windblown",
+            "glitch.jolt",
+            "glitch.prism",
+            "glitch.dropout",
+            "glitch.slicer",
+            "glitch.flipboard",
+            "glitch.servo",
+            "ink.inkline",
+            "ink.ignite",
+            "ink.sweep",
+            "ink.halo",
+            "ink.flashbulb",
+            "ink.hollow"
+          ],
+          "type": "string",
+          "description": "Entrance motion preset (optional)"
+        },
+        "time": {
+          "type": "number",
+          "description": "Time in seconds; omit for playhead"
+        },
+        "animation_loop": {
+          "type": "string",
+          "description": "Looping motion while the title holds (optional)",
+          "enum": [
+            "fade.firefly",
+            "fade.breathe",
+            "blur.lensbreath",
+            "scale.heartbeat",
+            "scale.crest",
+            "rot.rocking",
+            "rot.nervous",
+            "flip.billboard",
+            "flip.tiltwave",
+            "spring.trampoline",
+            "track.room",
+            "track.creep",
+            "wave.swell",
+            "wave.ribbon",
+            "wave.drift",
+            "wave.windblown",
+            "wave.flag",
+            "wave.haze",
+            "glitch.jolt",
+            "glitch.prism",
+            "glitch.slicer",
+            "glitch.stutter",
+            "ink.ignite",
+            "ink.sweep",
+            "ink.halo",
+            "ink.shimmer"
+          ]
+        },
+        "text": {
+          "description": "Title text (optional)",
+          "type": "string"
+        },
+        "animation_out": {
+          "enum": [
+            "fade.whisper",
+            "fade.drift",
+            "fade.ripple",
+            "fade.firefly",
+            "fade.wordbeat",
+            "fade.cascade",
+            "blur.focuspull",
+            "blur.mist",
+            "blur.smoke",
+            "blur.dream",
+            "blur.ghost",
+            "blur.crisp",
+            "scale.popup",
+            "scale.inflate",
+            "scale.shrink",
+            "scale.zoomletters",
+            "scale.squash",
+            "rot.whirl",
+            "rot.tilt",
+            "rot.pinwheel",
+            "rot.hinge",
+            "rot.cartwheel",
+            "flip.up",
+            "flip.cardturn",
+            "flip.fold",
+            "flip.door",
+            "flip.carousel",
+            "flip.leaf",
+            "rise.letters",
+            "rise.fromline",
+            "rise.drop",
+            "rise.glide",
+            "rise.shutter",
+            "rise.zipper",
+            "rise.escalator",
+            "rise.stepup",
+            "spring.balldrop",
+            "spring.jelly",
+            "spring.pop",
+            "spring.boing",
+            "spring.wobble",
+            "spring.rubber",
+            "track.gather",
+            "track.exhale",
+            "track.widefocus",
+            "track.slam",
+            "type.keystrike",
+            "type.caret",
+            "type.cipher",
+            "type.slot",
+            "type.scatter",
+            "type.stamp",
+            "wave.ripplein",
+            "wave.windblown",
+            "glitch.jolt",
+            "glitch.prism",
+            "glitch.dropout",
+            "glitch.slicer",
+            "glitch.servo",
+            "ink.inkline",
+            "ink.hollow"
+          ],
+          "description": "Exit motion preset (optional)",
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Edit title",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "name": "edit_title",
+    "description": "Change a title's text. With 'matching', the first title containing that text; otherwise the most recent title.",
+    "title": "Edit title",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "matching": {
+          "type": "string",
+          "description": "Text the existing title contains (optional)"
+        },
+        "new_text": {
+          "type": "string",
+          "description": "The replacement text"
+        }
+      },
+      "required": [
+        "new_text"
+      ]
+    }
+  },
+  {
+    "title": "Remove title",
+    "description": "Remove a title. With 'matching', the first title containing that text; otherwise the most recent title.",
+    "name": "remove_title",
+    "annotations": {
+      "title": "Remove title",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "inputSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "matching": {
+          "type": "string",
+          "description": "Text the title contains (optional)"
+        }
+      }
+    }
+  },
+  {
+    "title": "Add transition",
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Add transition",
+      "readOnlyHint": false
+    },
+    "description": "Add a transition (Cross Dissolve, Zoom In, Whip Pan, …) at a cut point. Creates the cut if needed.",
+    "inputSchema": {
+      "properties": {
+        "duration": {
+          "type": "number",
+          "description": "Overlap seconds (default 0.5)"
+        },
+        "at_time": {
+          "type": "number",
+          "description": "Cut time in seconds; omit for playhead"
+        },
+        "type": {
+          "description": "Transition type",
+          "type": "string",
+          "enum": [
+            "Cross Dissolve",
+            "Fade to Black",
+            "Dip to White",
+            "Zoom In",
+            "Zoom Out",
+            "Whip Pan",
+            "Spin",
+            "Glitch Cut",
+            "Smooth Zoom",
+            "Cube Flip",
+            "Slide Push",
+            "Blur Transition",
+            "Velocity Cut",
+            "Shake Cut",
+            "Luma Fade",
+            "Light Leak",
+            "Lens Flare",
+            "Warp",
+            "Flashback",
+            "Ink Bleed",
+            "Film Burn",
+            "Whip Up",
+            "Zoom Punch",
+            "Circle Wipe",
+            "Pixelate"
+          ]
+        }
+      },
+      "type": "object",
+      "required": [
+        "type"
+      ]
+    },
+    "name": "add_transition"
+  },
+  {
+    "inputSchema": {
+      "required": [],
+      "properties": {
+        "seconds": {
+          "description": "Transition duration in seconds (default the project's)",
+          "type": "number"
+        },
+        "type": {
+          "description": "Force one transition type for every join; omit for the smart per-cut pick",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "readOnlyHint": false,
+      "openWorldHint": false,
+      "title": "Apply auto transitions"
+    },
+    "name": "apply_auto_transitions",
+    "title": "Apply auto transitions",
+    "description": "Analyse EVERY cut on the timeline and place the transition an editor would pick at each one (zoom punch on jump cuts, dissolve in-scene, fade on scene changes). Use this instead of calling add_transition once per cut. Needs cuts to already exist."
+  },
+  {
+    "annotations": {
+      "readOnlyHint": false,
+      "openWorldHint": false,
+      "title": "Blur sensitive text",
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "name": "blur_sensitive_text",
+    "inputSchema": {
+      "required": [],
+      "properties": {
+        "secrets": {
+          "description": "Also detect secret shapes: keys, tokens, passwords, emails, card numbers (default true)",
+          "type": "boolean"
+        },
+        "end": {
+          "type": "number",
+          "description": "Scan to (seconds, default end of video)"
+        },
+        "include_labels": {
+          "type": "boolean",
+          "description": "Blur the label too ('Access token:'), not just the value (default false)"
+        },
+        "style": {
+          "type": "string",
+          "description": "Blur (default) or a pixelate mosaic",
+          "enum": [
+            "blur",
+            "pixelate"
+          ]
+        },
+        "query": {
+          "description": "The user's own words for what to hide, e.g. 'access token' or a visible prefix like 'sk-' (optional)",
+          "type": "string"
+        },
+        "interval": {
+          "type": "number",
+          "description": "Seconds between first-pass frames (default 0.5; long videos are spaced out to 1200 frames). Smaller catches text shown only briefly, but is slower."
+        },
+        "start": {
+          "description": "Scan from (seconds, default 0)",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "title": "Blur sensitive text",
+    "description": "Find and BLUR sensitive text shown on screen: access tokens, API keys (sk-..., ghp_..., AKIA...), bearer tokens, JWTs, passwords and other 'token:/password:/secret:' values, emails, card numbers, and/or any phrase the user names. Scans rendered frames on-device (OCR, no upload): a first pass over the range (default: the whole video; every 0.5 s on short videos, at most 1200 frames on long ones), then every 0.5 s around everything found, so each blur starts and ends with its text and follows it when the page scrolls. Unchanged frames are not re-read, so long screen recordings stay fast. Adds every blur in ONE undo step. Long videos can take a few minutes. Use this whenever the user asks to blur/hide/censor/redact a token, key, password, email, or 'sensitive info'. Reports what was blurred and where (masked, never the secret)."
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Export video"
+    },
+    "description": "Export/render the final video to the user's chosen Zella save folder. Optionally override quality (720p/1080p/4k/8k) and platform. Always asks for confirmation first (it writes a file). 4K/8K require Zella Pro.",
+    "name": "export_video",
+    "inputSchema": {
+      "properties": {
+        "quality": {
+          "type": "string",
+          "description": "Export resolution tier; omit for the current default",
+          "enum": [
+            "720p",
+            "1080p",
+            "4k",
+            "8k"
+          ]
+        },
+        "platform": {
+          "description": "Optional platform override (tiktok, youtube, shorts, reels, square, …)",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "title": "Export video"
+  },
+  {
+    "name": "seek_to_time",
+    "title": "Seek to time",
+    "inputSchema": {
+      "properties": {
+        "seconds": {
+          "type": "number",
+          "description": "Absolute time in seconds"
+        }
+      },
+      "required": [
+        "seconds"
+      ],
+      "type": "object"
+    },
+    "description": "Move the playhead to an absolute time in seconds.",
+    "annotations": {
+      "title": "Seek to time",
+      "destructiveHint": false,
+      "readOnlyHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "description": "Select a segment by 0-based index (targets it for subsequent edits).",
+    "inputSchema": {
+      "properties": {
+        "segment_index": {
+          "description": "0-based segment index",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "segment_index"
+      ],
+      "type": "object"
+    },
+    "name": "select_segment",
+    "annotations": {
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "title": "Select segment",
+      "idempotentHint": true
+    },
+    "title": "Select segment"
+  },
+  {
+    "title": "List backgrounds",
+    "description": "List the built-in background presets that ship with Zella - 20 stills and 20 animated/moving ones (ocean, aurora, ember, bokeh, studio colours...). Call this FIRST whenever the user asks for a background by DESCRIPTION (\"an ocean video background\", \"something moving\", \"a warm studio look\") instead of asking them for a file path. Then pass the chosen id to set_background(preset_id:).",
+    "inputSchema": {
+      "required": [],
+      "properties": {},
+      "type": "object"
+    },
+    "name": "list_backgrounds",
+    "annotations": {
+      "readOnlyHint": true,
+      "idempotentHint": true,
+      "destructiveHint": false,
+      "title": "List backgrounds",
+      "openWorldHint": false
+    }
+  },
+  {
+    "description": "Add a cut (split point) at the current playhead position.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "name": "split_at_playhead",
+    "title": "Split at playhead",
+    "annotations": {
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "title": "Split at playhead",
+      "openWorldHint": false,
+      "destructiveHint": false
+    }
+  },
+  {
+    "name": "add_split",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "description": "Time in seconds",
+          "type": "number"
+        }
+      },
+      "required": [
+        "time"
+      ]
+    },
+    "annotations": {
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "title": "Add split",
+      "readOnlyHint": false,
+      "idempotentHint": false
+    },
+    "description": "Add a cut (split point) at a specific time in seconds.",
+    "title": "Add split"
+  },
+  {
+    "name": "set_trim",
+    "description": "Set the export in/out points (trim) in seconds. Pass end=0 to mean 'until the end'.",
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Set trim",
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "inputSchema": {
+      "properties": {
+        "start": {
+          "type": "number",
+          "description": "In-point seconds"
+        },
+        "end": {
+          "description": "Out-point seconds (0 = end)",
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ]
+    },
+    "title": "Set trim"
+  },
+  {
+    "title": "Reorder segment",
+    "inputSchema": {
+      "properties": {
+        "from_index": {
+          "type": "integer",
+          "description": "0-based active-segment source position"
+        },
+        "to_index": {
+          "type": "integer",
+          "description": "0-based active-segment destination position"
+        }
+      },
+      "required": [
+        "from_index",
+        "to_index"
+      ],
+      "type": "object"
+    },
+    "description": "Move an active (non-deleted) segment from one position to another to re-order the cut pieces. Indices are over ACTIVE segments. Reversible via undo.",
+    "annotations": {
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "title": "Reorder segment"
+    },
+    "name": "reorder_segment"
+  },
+  {
+    "title": "Set segment speed",
+    "description": "Set the playback speed of a segment (selects it first). 1.0 = normal, 2.0 = 2× faster, 0.5 = slow-mo.",
+    "name": "set_segment_speed",
+    "annotations": {
+      "title": "Set segment speed",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "segment_index",
+        "speed"
+      ],
+      "properties": {
+        "segment_index": {
+          "type": "integer",
+          "description": "0-based segment index"
+        },
+        "speed": {
+          "type": "number",
+          "description": "Speed multiplier, e.g. 2.0"
+        }
+      }
+    }
+  },
+  {
+    "name": "apply_speed_ramp",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "segment_index": {
+          "type": "integer",
+          "description": "0-based segment index"
+        },
+        "ramp": {
+          "description": "Ramp shape",
+          "type": "string",
+          "enum": [
+            "Slow → Fast → Slow",
+            "Fast → Slow → Fast",
+            "Freeze Frame",
+            "Ramp from 0%",
+            "Ramp to 0%"
+          ]
+        }
+      },
+      "required": [
+        "segment_index",
+        "ramp"
+      ]
+    },
+    "title": "Apply speed ramp",
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "title": "Apply speed ramp",
+      "readOnlyHint": false,
+      "openWorldHint": false
+    },
+    "description": "Apply a smooth speed ramp to the selected segment."
+  },
+  {
+    "name": "clear_captions",
+    "description": "Remove every caption line (the transcript stays; regenerate anytime).",
+    "title": "Clear captions",
+    "annotations": {
+      "openWorldHint": false,
+      "idempotentHint": false,
+      "title": "Clear captions",
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "inputSchema": {
+      "properties": {},
+      "type": "object",
+      "required": []
+    }
+  },
+  {
+    "inputSchema": {
+      "required": [
+        "containing"
+      ],
+      "type": "object",
+      "properties": {
+        "containing": {
+          "description": "Text the caption line contains",
+          "type": "string"
+        }
+      }
+    },
+    "annotations": {
+      "idempotentHint": false,
+      "title": "Remove caption cue",
+      "readOnlyHint": false,
+      "openWorldHint": false,
+      "destructiveHint": true
+    },
+    "description": "Remove the first caption line whose text contains the given words.",
+    "title": "Remove caption cue",
+    "name": "remove_caption_cue"
+  },
+  {
+    "annotations": {
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "title": "Add music loop"
+    },
+    "description": "Lay one of Zella's built-in music beds under the whole video, looping, at a level that sits under speech, with music ducked while someone talks. The beds are composed by Zella itself: royalty-free, no attribution, safe for monetised videos. Replaces any bed already there. Pick a style that fits: 'Viral Bounce', 'Hype Trap', 'Future Bass Lift' or 'Phonk Drift' for energetic short-form; 'Lo-Fi Chill' or 'Corporate Clean' for tutorials; 'Epic Trailer' or 'Cinematic Rise' for drama; 'Travel House' for vlogs; 'Happy Ukulele' for light, cheerful clips; 'Chiptune Quest' for gaming. To remove it, use remove_music.",
+    "title": "Add music loop",
+    "name": "add_music_loop",
+    "inputSchema": {
+      "properties": {
+        "style": {
+          "type": "string",
+          "description": "The music style",
+          "enum": [
+            "Lo-Fi Chill",
+            "Upbeat Pop",
+            "Cinematic Rise",
+            "Hip-Hop Head-Nod",
+            "Acoustic Feel",
+            "EDM Drive",
+            "Corporate Clean",
+            "Night Drive",
+            "Phonk Drift",
+            "Amapiano Sun",
+            "Drill Night",
+            "Desi Pop",
+            "Sad Piano",
+            "Bossa Cafe",
+            "Viral Bounce",
+            "Hype Trap",
+            "Afro Vibes",
+            "Future Bass Lift",
+            "Funk Strut",
+            "Epic Trailer",
+            "Travel House",
+            "Happy Ukulele",
+            "Chiptune Quest"
+          ]
+        }
+      },
+      "required": [
+        "style"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "annotations": {
+      "title": "Remove music",
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "destructiveHint": true
+    },
+    "title": "Remove music",
+    "inputSchema": {
+      "properties": {},
+      "type": "object",
+      "required": []
+    },
+    "name": "remove_music",
+    "description": "Remove every music bed (audio overlays longer than 8 seconds). Short sound effects stay."
+  },
+  {
+    "description": "Set the music bed volume (0…1). Applies to audio overlays longer than 8 seconds.",
+    "annotations": {
+      "title": "Set music volume",
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "readOnlyHint": false
+    },
+    "name": "set_music_volume",
+    "title": "Set music volume",
+    "inputSchema": {
+      "required": [
+        "volume"
+      ],
+      "type": "object",
+      "properties": {
+        "volume": {
+          "type": "number",
+          "description": "0…1"
+        }
+      }
+    }
+  },
+  {
+    "annotations": {
+      "openWorldHint": false,
+      "title": "Auto duck",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "title": "Auto duck",
+    "description": "Enable or disable auto-ducking (music dips under speech).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "true=on, false=off"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    },
+    "name": "auto_duck"
+  },
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "title": "Add sound effect",
+      "readOnlyHint": false,
+      "openWorldHint": false
+    },
+    "title": "Add sound effect",
+    "name": "add_sound_effect",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "time": {
+          "type": "number",
+          "description": "Time in seconds; omit for playhead"
+        },
+        "name": {
+          "description": "Sound effect name",
+          "enum": [
+            "Whoosh",
+            "Swoosh",
+            "Riser",
+            "Boom",
+            "Vine Boom",
+            "Pop",
+            "Click",
+            "Tap",
+            "Ding",
+            "Notification",
+            "Error",
+            "Bass Drop",
+            "Explosion",
+            "Suspense",
+            "Cymbal Crash",
+            "Drum Roll",
+            "Heartbeat",
+            "Glitch",
+            "Punch",
+            "Laser",
+            "Record Scratch",
+            "Sparkle",
+            "Coin",
+            "Air Horn",
+            "Boing",
+            "Level Up",
+            "Ta-Da",
+            "Slide Whistle",
+            "Camera Shutter",
+            "Keyboard",
+            "Reverse Whoosh",
+            "Tape Stop",
+            "Rewind",
+            "Page Turn",
+            "Censor Beep",
+            "Bubble Pop",
+            "Typewriter",
+            "Success",
+            "Reverse Cymbal",
+            "Fail",
+            "Cash Register",
+            "Applause",
+            "Crickets",
+            "Whip",
+            "Deep Whoosh",
+            "Air Swipe",
+            "Zoom In",
+            "Zoom Out",
+            "Static Burst",
+            "Spin",
+            "Text Pop",
+            "Caption Tick",
+            "Soft Click",
+            "Toggle On",
+            "Toggle Off",
+            "Blip",
+            "Finger Snap",
+            "Counter Tick",
+            "Checkmark",
+            "Cinematic Hit",
+            "Sub Drop",
+            "Thud",
+            "Braam",
+            "Short Riser",
+            "Snare Build",
+            "Downlifter",
+            "Metal Hit",
+            "Shimmer Reveal",
+            "Magic Wand",
+            "Dramatic Sting",
+            "Ticking Clock",
+            "Tension Drone",
+            "Countdown",
+            "Bonk",
+            "Squeak",
+            "Cartoon Run",
+            "Rimshot",
+            "Clown Honk",
+            "Wobble",
+            "Cartoon Fall",
+            "Power Up",
+            "Jump",
+            "Game Over",
+            "Retro Hit",
+            "Retro Explosion",
+            "Menu Select",
+            "Achievement",
+            "Like",
+            "Bell Ring",
+            "Message Sent",
+            "Message In",
+            "Phone Buzz",
+            "Alert Chime",
+            "Footsteps",
+            "Door Knock",
+            "Light Switch",
+            "Water Drop",
+            "Wind",
+            "Rain",
+            "Crowd Cheer",
+            "Paper Crumple"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "description": "Add a built-in sound effect to the timeline at a time. Great for punching up transitions, captions, reveals and jokes. No file needed - the library is built in. Pick by job. Cuts and slides: Whip, Whoosh, Swoosh, Air Swipe, Deep Whoosh, Spin, Zoom In, Zoom Out, Glitch, Static Burst. Text and captions appearing: Text Pop, Caption Tick, Pop, Blip. Build-ups: Short Riser, Riser, Snare Build, then a hit: Cinematic Hit, Boom, Sub Drop, Braam, Bass Drop. Reveals: Shimmer Reveal, Magic Wand, Drum Roll, Ta-Da, Dramatic Sting. Jokes and reactions: Vine Boom, Bonk, Rimshot, Record Scratch, Crickets, Fail, Clown Honk, Cartoon Fall. Like/subscribe and social call-outs: Like, Bell Ring, Notification, Message In, Message Sent. Wins and games: Success, Achievement, Level Up, Power Up, Coin, Game Over. Tension: Tension Drone, Ticking Clock, Heartbeat, Suspense. Foley and beds: Footsteps, Door Knock, Wind, Rain, Crowd Cheer, Applause, Keyboard."
+  },
+  {
+    "name": "remove_sound_effect",
+    "description": "Remove a one-shot sound effect (audio overlays up to 8 seconds). With 'at_time', the one nearest that second; otherwise the most recent.",
+    "title": "Remove sound effect",
+    "inputSchema": {
+      "properties": {
+        "at_time": {
+          "description": "Timeline seconds (optional)",
+          "type": "number"
+        }
+      },
+      "type": "object",
+      "required": []
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Remove sound effect",
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "idempotentHint": false
+    }
+  },
+  {
+    "description": "Add a synthesized sound effect under every transition on the timeline (whoosh for whips/slides, impact for zoom punches, riser into fades). Needs transitions first (auto_transitions or manual). Calling it again while applied removes the sounds.",
+    "title": "Apply auto sounds",
+    "inputSchema": {
+      "properties": {},
+      "type": "object",
+      "required": []
+    },
+    "name": "apply_auto_sounds",
+    "annotations": {
+      "openWorldHint": false,
+      "title": "Apply auto sounds",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "readOnlyHint": false
+    }
+  },
+  {
+    "name": "edit_audio_overlay",
+    "title": "Edit audio overlay",
+    "description": "Edit one music/voiceover overlay by index: move (start), trim (duration), set volume (0…1), split at a time, or delete. Only the fields you pass change.",
+    "inputSchema": {
+      "required": [
+        "index"
+      ],
+      "properties": {
+        "start": {
+          "type": "number",
+          "description": "New start seconds"
+        },
+        "volume": {
+          "description": "Gain 0…1",
+          "type": "number"
+        },
+        "index": {
+          "type": "integer",
+          "description": "0-based audio-overlay index"
+        },
+        "delete": {
+          "description": "Remove this overlay",
+          "type": "boolean"
+        },
+        "duration": {
+          "description": "New duration seconds",
+          "type": "number"
+        },
+        "split_at": {
+          "type": "number",
+          "description": "Split at this time (seconds)"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "title": "Edit audio overlay",
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false
+    }
+  },
+  {
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "overlay_index": {
+          "type": "integer",
+          "description": "0-based audio overlay index"
+        },
+        "volume": {
+          "description": "Gain 0.0–1.0",
+          "type": "number"
+        }
+      },
+      "required": [
+        "overlay_index",
+        "volume"
+      ]
+    },
+    "title": "Set overlay volume",
+    "description": "Set the gain of a music/voiceover overlay by its 0-based index (see audioOverlays in get_project_state).",
+    "annotations": {
+      "destructiveHint": false,
+      "title": "Set overlay volume",
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "name": "set_overlay_volume"
+  },
+  {
+    "description": "Set how strong noise removal is (0 = off, 1 = full). Applies to the cleaned voice.",
+    "inputSchema": {
+      "required": [
+        "strength"
+      ],
+      "type": "object",
+      "properties": {
+        "strength": {
+          "description": "0…1",
+          "type": "number"
+        }
+      }
+    },
+    "annotations": {
+      "idempotentHint": false,
+      "readOnlyHint": false,
+      "openWorldHint": false,
+      "title": "Set noise strength",
+      "destructiveHint": false
+    },
+    "title": "Set noise strength",
+    "name": "set_noise_strength"
+  },
+  {
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tone": {
+          "type": "string",
+          "description": "Tone",
+          "enum": [
+            "natural",
+            "warm",
+            "bright",
+            "podcast",
+            "cinematic"
+          ]
+        }
+      },
+      "required": [
+        "tone"
+      ]
+    },
+    "annotations": {
+      "openWorldHint": false,
+      "title": "Set voice tone",
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false
+    },
+    "title": "Set voice tone",
+    "description": "Set the voice-polish tone color.",
+    "name": "set_voice_tone"
+  },
+  {
+    "title": "Set audio lead",
+    "description": "Shift audio earlier (J-cut, positive) or later (L-cut, negative) relative to video, in seconds (-2…2).",
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Set audio lead",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "name": "set_audio_lead",
+    "inputSchema": {
+      "required": [
+        "seconds"
+      ],
+      "properties": {
+        "seconds": {
+          "type": "number",
+          "description": "Lead seconds; + = audio leads video"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "title": "Detach video audio",
+    "description": "Detach the embedded video audio to its own overlay (and mute the original).",
+    "name": "detach_video_audio",
+    "annotations": {
+      "title": "Detach video audio",
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "destructiveHint": false
+    },
+    "inputSchema": {
+      "properties": {},
+      "type": "object",
+      "required": []
+    }
+  },
+  {
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Reattach video audio",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "name": "reattach_video_audio",
+    "inputSchema": {
+      "required": [],
+      "properties": {},
+      "type": "object"
+    },
+    "title": "Reattach video audio",
+    "description": "Re-attach (unmute) the embedded video audio."
+  },
+  {
+    "name": "toggle_cinematic_master",
+    "inputSchema": {
+      "properties": {
+        "enabled": {
+          "description": "true=on, false=off",
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "required": [
+        "enabled"
+      ]
+    },
+    "title": "Toggle cinematic master",
+    "annotations": {
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Toggle cinematic master",
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "description": "Enable or disable the whole-mix cinematic master (offline EQ on voice + music)."
+  },
+  {
+    "inputSchema": {
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "annotations": {
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "title": "Apply color match",
+      "openWorldHint": false
+    },
+    "description": "Grab the color at the current playhead as a reference and match the clip's color to it.",
+    "title": "Apply color match",
+    "name": "apply_color_match"
+  },
+  {
+    "inputSchema": {
+      "required": [
+        "effect",
+        "amount"
+      ],
+      "type": "object",
+      "properties": {
+        "amount": {
+          "description": "Intensity, or 1/0 for on-off effects",
+          "type": "number"
+        },
+        "effect": {
+          "description": "Which effect",
+          "type": "string",
+          "enum": [
+            "blackAndWhite",
+            "letterbox",
+            "broadcastSafe",
+            "blur",
+            "vignette",
+            "grain",
+            "glow",
+            "pixelate",
+            "chromaticAberration",
+            "colorHue"
+          ]
+        }
+      }
+    },
+    "name": "set_special_effect",
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "title": "Set special effect",
+      "idempotentHint": false,
+      "readOnlyHint": false
+    },
+    "title": "Set special effect",
+    "description": "Enable/adjust a stylistic effect on the selected segment (or global). blackAndWhite/letterbox/broadcastSafe are on/off (amount 1=on,0=off); others are intensity: blur 0…40, vignette/grain/glow/pixelate/chromaticAberration 0…1, colorHue 0…360."
+  },
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "title": "Set color grade"
+    },
+    "title": "Set color grade",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "Amount, roughly -1…1",
+          "type": "number"
+        },
+        "range": {
+          "description": "Tonal range",
+          "enum": [
+            "shadows",
+            "midtones",
+            "highlights"
+          ],
+          "type": "string"
+        },
+        "channel": {
+          "description": "Channel",
+          "type": "string",
+          "enum": [
+            "red",
+            "green",
+            "blue",
+            "luma"
+          ]
+        }
+      },
+      "required": [
+        "range",
+        "channel",
+        "value"
+      ]
+    },
+    "description": "Color-wheel grade (lift/gamma/gain) on the selected segment. range = shadows(lift)/midtones(gamma)/highlights(gain); channel = red/green/blue/luma; value roughly -1…1.",
+    "name": "set_color_grade"
+  },
+  {
+    "annotations": {
+      "title": "Reset clip effects",
+      "destructiveHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false
+    },
+    "description": "Clear all color, grade, special effects, transform and opacity on the selected segment (or global) back to default.",
+    "name": "reset_clip_effects",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "title": "Reset clip effects"
+  },
+  {
+    "annotations": {
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "title": "Set transform",
+      "readOnlyHint": false
+    },
+    "title": "Set transform",
+    "name": "set_transform",
+    "description": "Position/scale/rotate the selected segment's video. positionX/Y in points (0=center), rotation in degrees, scaleAll/scaleX/scaleY (1=100%), anchorX/Y 0…1.",
+    "inputSchema": {
+      "properties": {
+        "property": {
+          "enum": [
+            "positionX",
+            "positionY",
+            "rotation",
+            "scaleAll",
+            "scaleX",
+            "scaleY",
+            "anchorX",
+            "anchorY"
+          ],
+          "type": "string",
+          "description": "Which transform property"
+        },
+        "value": {
+          "description": "New value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "property",
+        "value"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "annotations": {
+      "title": "Set opacity",
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": false,
+      "readOnlyHint": false
+    },
+    "name": "set_opacity",
+    "inputSchema": {
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "0.0–1.0"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "type": "object"
+    },
+    "title": "Set opacity",
+    "description": "Set the selected segment's opacity, 0.0 (transparent) to 1.0 (opaque)."
+  },
+  {
+    "description": "Set the selected segment's blend mode.",
+    "name": "set_blend_mode",
+    "inputSchema": {
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "normal",
+            "multiply",
+            "screen",
+            "overlay",
+            "hardLight",
+            "softLight",
+            "colorDodge",
+            "colorBurn",
+            "darken",
+            "lighten",
+            "difference",
+            "exclusion",
+            "hue",
+            "saturation",
+            "color",
+            "luminosity"
+          ],
+          "description": "Blend mode"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "title": "Set blend mode",
+      "idempotentHint": false
+    },
+    "title": "Set blend mode"
+  },
+  {
+    "annotations": {
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "title": "Set transform keyframe",
+      "openWorldHint": false
+    },
+    "title": "Set transform keyframe",
+    "description": "Animate the selected segment: add a transform keyframe at the playhead for a property, or clear that property's keyframes. Properties: positionX, positionY, scale, rotation, opacity.",
+    "name": "set_transform_keyframe",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "clear": {
+          "description": "Remove all keyframes for this property",
+          "type": "boolean"
+        },
+        "property": {
+          "description": "Animated property",
+          "enum": [
+            "positionX",
+            "positionY",
+            "scale",
+            "rotation",
+            "opacity"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "description": "Keyframe value at the playhead"
+        }
+      },
+      "required": [
+        "property"
+      ]
+    }
+  },
+  {
+    "title": "Apply cinematic look",
+    "description": "Apply a one-tap cinematic color look (warm filmic grade) to the clip.",
+    "inputSchema": {
+      "required": [],
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Apply cinematic look",
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "name": "apply_cinematic_look"
+  },
+  {
+    "inputSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "title": "Apply cinematic move",
+      "idempotentHint": false,
+      "readOnlyHint": false
+    },
+    "name": "apply_cinematic_move",
+    "description": "A slow cinematic push-in and drift - the impossible-dolly shot. Works on any clip; with a background applied the subject also drifts across the backdrop.",
+    "title": "Apply cinematic move"
+  },
+  {
+    "description": "Studio look in one tap: a soft backlight halo behind the subject plus a grounding contact shadow. Needs a replaced background (call remove_background first).",
+    "annotations": {
+      "idempotentHint": false,
+      "readOnlyHint": false,
+      "title": "Apply studio glow",
+      "openWorldHint": false,
+      "destructiveHint": false
+    },
+    "title": "Apply studio glow",
+    "inputSchema": {
+      "properties": {},
+      "type": "object",
+      "required": []
+    },
+    "name": "apply_studio_glow"
+  },
+  {
+    "description": "Detect the beat in the audio and pulse a subtle zoom on every hit - the music-video punch.",
+    "title": "Apply beat punch",
+    "inputSchema": {
+      "required": [],
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "title": "Apply beat punch",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "name": "apply_beat_punch"
+  },
+  {
+    "title": "Remove background",
+    "name": "remove_background",
+    "description": "One-click AI background removal on the main clip: mattes out the person and blurs the original background behind them. Runs an on-device pass (no upload); may take a bit.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "annotations": {
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "title": "Remove background",
+      "idempotentHint": false,
+      "readOnlyHint": false
+    }
+  },
+  {
+    "description": "Replace the background behind the matted subject on the main clip. Use a preset style, OR a solid color (hex), OR an image path, OR a video path. Runs an on-device matte+composite pass.",
+    "inputSchema": {
+      "properties": {
+        "color": {
+          "type": "string",
+          "description": "Solid color hex like 1E90FF"
+        },
+        "preset_id": {
+          "description": "Built-in background preset id from list_backgrounds, e.g. vid.flow.ocean. Use this for scenery or moving backdrops - it needs no file on disk.",
+          "type": "string"
+        },
+        "style": {
+          "type": "string",
+          "description": "Preset background",
+          "enum": [
+            "blur",
+            "cutout",
+            "warm",
+            "navy",
+            "slate",
+            "blush",
+            "green",
+            "bokeh",
+            "office",
+            "nature",
+            "sunset",
+            "sky"
+          ]
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "set_background",
+    "title": "Set background",
+    "annotations": {
+      "title": "Set background",
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "restore_background",
+    "title": "Restore background",
+    "description": "Undo AI background removal - restore the clip's original background.",
+    "annotations": {
+      "readOnlyHint": false,
+      "openWorldHint": false,
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "title": "Restore background"
+    },
+    "inputSchema": {
+      "required": [],
+      "properties": {},
+      "type": "object"
+    }
+  },
+  {
+    "annotations": {
+      "title": "Set reframe fill",
+      "openWorldHint": false,
+      "idempotentHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "title": "Set reframe fill",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "fill": {
+          "type": "boolean",
+          "description": "true=fill/crop, false=fit/letterbox"
+        }
+      },
+      "required": [
+        "fill"
+      ]
+    },
+    "name": "set_reframe_fill",
+    "description": "Set reframe mode: fill (CENTER-crop to fill the frame) or fit (letterbox, nothing cropped). The crop is centered - to keep the FACE/subject framed use auto_reframe instead; to shift the crop manually use set_reframe_offset."
+  },
+  {
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "x"
+      ],
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "-1…1 horizontal crop bias"
+        },
+        "y": {
+          "type": "number",
+          "description": "-1…1 vertical crop bias (optional)"
+        }
+      }
+    },
+    "name": "set_reframe_offset",
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Set reframe offset",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "title": "Set reframe offset",
+    "description": "Manually shift WHICH part of the source a fill reframe keeps: x = -1 far left … 0 centre … +1 far right; y likewise for top/bottom. Use when the user wants to nudge the crop ('show more of the left side'). For automatic face centering prefer auto_reframe. Implies fill mode and replaces any auto-reframe tracking."
+  },
+  {
+    "name": "add_zoom_at_playhead",
+    "description": "Add a punch-in zoom block at the current playhead.",
+    "title": "Add zoom at playhead",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "title": "Add zoom at playhead",
+      "readOnlyHint": false,
+      "idempotentHint": false
+    }
+  },
+  {
+    "inputSchema": {
+      "properties": {
+        "target_x": {
+          "type": "number",
+          "description": "Focus X 0…1"
+        },
+        "start": {
+          "description": "New start seconds",
+          "type": "number"
+        },
+        "index": {
+          "type": "integer",
+          "description": "0-based zoom-block index"
+        },
+        "scale": {
+          "description": "Peak zoom factor, e.g. 2.0",
+          "type": "number"
+        },
+        "hold_duration": {
+          "description": "Seconds held at peak",
+          "type": "number"
+        },
+        "target_y": {
+          "description": "Focus Y 0…1",
+          "type": "number"
+        },
+        "delete": {
+          "type": "boolean",
+          "description": "Remove this zoom block"
+        }
+      },
+      "required": [
+        "index"
+      ],
+      "type": "object"
+    },
+    "annotations": {
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Edit zoom block"
+    },
+    "title": "Edit zoom block",
+    "name": "edit_zoom_block",
+    "description": "Tweak one zoom block by index: move (start), change hold length, peak zoom (scale, 1=none), focus point (target_x/y 0…1), or delete it. Only the fields you pass change."
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Auto zoom from cursor"
+    },
+    "description": "Generate Screen-Studio-style auto-zooms from recorded cursor clicks.",
+    "inputSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "title": "Auto zoom from cursor",
+    "name": "auto_zoom_from_cursor"
+  },
+  {
+    "description": "Add a visual callout overlay (arrow, box, ellipse, label, keystroke, spotlight, number, blur, pixelate, ...). Optional placement: x, y = the box CENTRE and w, h = its size, all normalized 0-1 with a top-left origin (the same numbers find_text_on_screen returns); start/duration in timeline seconds (default: at the playhead for 3 s). Example: blur a box from 3 s to 8 s = kind blur, x 0.7, y 0.2, w 0.3, h 0.06, start 3, duration 5. To hide a token/key/password/email on screen use blur_sensitive_text instead, it finds the text for you.",
+    "name": "add_callout",
+    "title": "Add callout",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "number",
+          "description": "Start, timeline seconds (default: playhead)"
+        },
+        "h": {
+          "description": "Height 0-1 for region kinds (optional)",
+          "type": "number"
+        },
+        "kind": {
+          "type": "string",
+          "description": "Callout kind",
+          "enum": [
+            "arrow",
+            "box",
+            "ellipse",
+            "label",
+            "keystroke",
+            "spotlight",
+            "number",
+            "blur",
+            "leaderLine",
+            "popup",
+            "magnifier",
+            "highlight",
+            "underline",
+            "pixelate",
+            "emoji",
+            "stickyNote",
+            "scribbleCircle",
+            "timer",
+            "glitch",
+            "targetFrame"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "description": "Text for label/number/keystroke/popup/note kinds (optional)"
+        },
+        "y": {
+          "type": "number",
+          "description": "Centre Y 0-1, top-left origin (optional)"
+        },
+        "duration": {
+          "description": "Seconds on screen (default 3)",
+          "type": "number"
+        },
+        "x": {
+          "type": "number",
+          "description": "Centre X 0-1 (optional)"
+        },
+        "w": {
+          "type": "number",
+          "description": "Width 0-1 for box/blur/pixelate/region kinds (optional)"
+        }
+      },
+      "required": [
+        "kind"
+      ]
+    },
+    "annotations": {
+      "title": "Add callout",
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "openWorldHint": false,
+      "idempotentHint": false
+    }
+  },
+  {
+    "inputSchema": {
+      "required": [
+        "index"
+      ],
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "Centre X 0…1"
+        },
+        "y": {
+          "description": "Centre Y 0…1",
+          "type": "number"
+        },
+        "w": {
+          "type": "number",
+          "description": "Width 0…1 (region kinds: box, blur, pixelate, ...)"
+        },
+        "start": {
+          "description": "New start seconds",
+          "type": "number"
+        },
+        "h": {
+          "type": "number",
+          "description": "Height 0…1 (region kinds)"
+        },
+        "text": {
+          "type": "string",
+          "description": "Label/number/keystroke text"
+        },
+        "index": {
+          "type": "integer",
+          "description": "0-based callout index"
+        },
+        "duration": {
+          "description": "New duration seconds",
+          "type": "number"
+        },
+        "delete": {
+          "type": "boolean",
+          "description": "Remove this callout"
+        }
+      }
+    },
+    "title": "Edit callout",
+    "annotations": {
+      "destructiveHint": false,
+      "title": "Edit callout",
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "description": "Edit one callout by index: move (x,y = centre 0…1), resize (w,h 0…1), change text, retime (start, duration), or delete. Only the fields you pass change.",
+    "name": "edit_callout"
+  },
+  {
+    "name": "set_title_animation",
+    "annotations": {
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "title": "Set title animation",
+      "readOnlyHint": false,
+      "idempotentHint": false
+    },
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "animation_out": {
+          "type": "string",
+          "enum": [
+            "none",
+            "fade.whisper",
+            "fade.drift",
+            "fade.ripple",
+            "fade.firefly",
+            "fade.wordbeat",
+            "fade.cascade",
+            "blur.focuspull",
+            "blur.mist",
+            "blur.smoke",
+            "blur.dream",
+            "blur.ghost",
+            "blur.crisp",
+            "scale.popup",
+            "scale.inflate",
+            "scale.shrink",
+            "scale.zoomletters",
+            "scale.squash",
+            "rot.whirl",
+            "rot.tilt",
+            "rot.pinwheel",
+            "rot.hinge",
+            "rot.cartwheel",
+            "flip.up",
+            "flip.cardturn",
+            "flip.fold",
+            "flip.door",
+            "flip.carousel",
+            "flip.leaf",
+            "rise.letters",
+            "rise.fromline",
+            "rise.drop",
+            "rise.glide",
+            "rise.shutter",
+            "rise.zipper",
+            "rise.escalator",
+            "rise.stepup",
+            "spring.balldrop",
+            "spring.jelly",
+            "spring.pop",
+            "spring.boing",
+            "spring.wobble",
+            "spring.rubber",
+            "track.gather",
+            "track.exhale",
+            "track.widefocus",
+            "track.slam",
+            "type.keystrike",
+            "type.caret",
+            "type.cipher",
+            "type.slot",
+            "type.scatter",
+            "type.stamp",
+            "wave.ripplein",
+            "wave.windblown",
+            "glitch.jolt",
+            "glitch.prism",
+            "glitch.dropout",
+            "glitch.slicer",
+            "glitch.servo",
+            "ink.inkline",
+            "ink.hollow"
+          ],
+          "description": "Exit motion preset, or none"
+        },
+        "animation_loop": {
+          "type": "string",
+          "enum": [
+            "none",
+            "fade.firefly",
+            "fade.breathe",
+            "blur.lensbreath",
+            "scale.heartbeat",
+            "scale.crest",
+            "rot.rocking",
+            "rot.nervous",
+            "flip.billboard",
+            "flip.tiltwave",
+            "spring.trampoline",
+            "track.room",
+            "track.creep",
+            "wave.swell",
+            "wave.ribbon",
+            "wave.drift",
+            "wave.windblown",
+            "wave.flag",
+            "wave.haze",
+            "glitch.jolt",
+            "glitch.prism",
+            "glitch.slicer",
+            "glitch.stutter",
+            "ink.ignite",
+            "ink.sweep",
+            "ink.halo",
+            "ink.shimmer"
+          ],
+          "description": "Looping motion preset, or none"
+        },
+        "animation_intensity": {
+          "description": "Motion intensity 0 to 2 (1 = normal)",
+          "type": "number"
+        },
+        "animation_in": {
+          "description": "Entrance motion preset, or none",
+          "enum": [
+            "none",
+            "fade.whisper",
+            "fade.drift",
+            "fade.ripple",
+            "fade.firefly",
+            "fade.wordbeat",
+            "fade.cascade",
+            "blur.focuspull",
+            "blur.mist",
+            "blur.smoke",
+            "blur.dream",
+            "blur.ghost",
+            "blur.crisp",
+            "scale.popup",
+            "scale.inflate",
+            "scale.shrink",
+            "scale.zoomletters",
+            "scale.squash",
+            "rot.whirl",
+            "rot.tilt",
+            "rot.pinwheel",
+            "rot.hinge",
+            "rot.cartwheel",
+            "flip.up",
+            "flip.cardturn",
+            "flip.fold",
+            "flip.door",
+            "flip.carousel",
+            "flip.leaf",
+            "rise.letters",
+            "rise.fromline",
+            "rise.drop",
+            "rise.glide",
+            "rise.shutter",
+            "rise.zipper",
+            "rise.escalator",
+            "rise.stepup",
+            "spring.balldrop",
+            "spring.jelly",
+            "spring.pop",
+            "spring.boing",
+            "spring.wobble",
+            "spring.rubber",
+            "track.gather",
+            "track.exhale",
+            "track.widefocus",
+            "track.slam",
+            "type.keystrike",
+            "type.caret",
+            "type.cipher",
+            "type.slot",
+            "type.boot",
+            "type.scatter",
+            "type.stamp",
+            "wave.swell",
+            "wave.ripplein",
+            "wave.windblown",
+            "glitch.jolt",
+            "glitch.prism",
+            "glitch.dropout",
+            "glitch.slicer",
+            "glitch.flipboard",
+            "glitch.servo",
+            "ink.inkline",
+            "ink.ignite",
+            "ink.sweep",
+            "ink.halo",
+            "ink.flashbulb",
+            "ink.hollow"
+          ],
+          "type": "string"
+        },
+        "title_index": {
+          "description": "0-based title index; omit for the last title",
+          "type": "integer"
+        },
+        "animation_speed": {
+          "type": "number",
+          "description": "Motion speed 0.25 to 3 (1 = normal), applied to every phase set in this call"
+        }
+      },
+      "required": []
+    },
+    "description": "Set or clear a title's letter motion. title_index is 0-based (see get_project_state titles); omit it for the most recently added title. Pass a preset id per phase, or \"none\" to clear that phase. Phases you omit stay as they are.",
+    "title": "Set title animation"
+  },
+  {
+    "inputSchema": {
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "name": "add_text_behind_subject",
+    "title": "Add text behind subject",
+    "annotations": {
+      "title": "Add text behind subject",
+      "openWorldHint": false,
+      "idempotentHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "description": "Drop a big bold title BEHIND the speaker so they occlude it - the 3D depth intro. Bakes the person matte."
+  },
+  {
+    "title": "Add intro card",
+    "annotations": {
+      "destructiveHint": false,
+      "title": "Add intro card",
+      "readOnlyHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    },
+    "name": "add_intro_card",
+    "description": "Add an intro text card at the start (a full-canvas Text Card title). Optional text, style (dark/light/brand) and length in seconds.",
+    "inputSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": [
+            "dark",
+            "light",
+            "brand"
+          ],
+          "description": "Card look, default dark"
+        },
+        "text": {
+          "description": "Card text (optional)",
+          "type": "string"
+        },
+        "seconds": {
+          "type": "number",
+          "description": "Card length, default 3"
+        }
+      }
+    }
+  },
+  {
+    "title": "Add outro card",
+    "name": "add_outro_card",
+    "annotations": {
+      "openWorldHint": false,
+      "title": "Add outro card",
+      "destructiveHint": false,
+      "readOnlyHint": false,
+      "idempotentHint": false
+    },
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "seconds": {
+          "description": "Card length, default 3",
+          "type": "number"
+        },
+        "text": {
+          "description": "Card text (optional)",
+          "type": "string"
+        },
+        "style": {
+          "enum": [
+            "dark",
+            "light",
+            "brand"
+          ],
+          "description": "Card look, default dark",
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "description": "Add an outro text card at the end (a full-canvas Text Card title). Optional text, style (dark/light/brand) and length in seconds."
+  },
+  {
+    "name": "edit_image_overlay",
+    "inputSchema": {
+      "required": [
+        "index"
+      ],
+      "properties": {
+        "delete": {
+          "type": "boolean",
+          "description": "Remove this image"
+        },
+        "index": {
+          "description": "0-based image-overlay index",
+          "type": "integer"
+        },
+        "start": {
+          "description": "New start seconds",
+          "type": "number"
+        },
+        "split_at": {
+          "type": "number",
+          "description": "Split at this time (seconds)"
+        },
+        "duration": {
+          "description": "New duration seconds",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "annotations": {
+      "idempotentHint": false,
+      "readOnlyHint": false,
+      "title": "Edit image overlay",
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "description": "Edit one image overlay by index: move (start), change duration, split, or delete. Only the fields you pass change.",
+    "title": "Edit image overlay"
+  },
+  {
+    "description": "Edit one video (PiP) overlay by index (see videoOverlays in get_project_state): move (start), change duration, set volume (0-1), or delete. Only the fields you pass change. NOTE: the overlay with is_camera_bubble=true is the user's face camera - do not delete it when asked about b-roll; use remove_broll for that.",
+    "annotations": {
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "title": "Edit video overlay",
+      "readOnlyHint": false
+    },
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "description": "New duration seconds",
+          "type": "number"
+        },
+        "index": {
+          "type": "integer",
+          "description": "0-based video-overlay index"
+        },
+        "start": {
+          "description": "New start seconds",
+          "type": "number"
+        },
+        "volume": {
+          "type": "number",
+          "description": "Gain 0-1"
+        },
+        "delete": {
+          "type": "boolean",
+          "description": "Remove this overlay"
+        }
+      },
+      "required": [
+        "index"
+      ]
+    },
+    "name": "edit_video_overlay",
+    "title": "Edit video overlay"
+  },
+  {
+    "annotations": {
+      "openWorldHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "title": "Remove transitions",
+      "readOnlyHint": false
+    },
+    "title": "Remove transitions",
+    "inputSchema": {
+      "type": "object",
+      "required": [],
+      "properties": {}
+    },
+    "description": "Remove all placed transitions.",
+    "name": "remove_transitions"
+  },
+  {
+    "description": "Remove ALL b-roll clips that Add B-Roll placed on the timeline, in one step. Never touches the camera bubble or user-placed overlays. Use this for 'remove the b-roll' instead of deleting overlays one by one.",
+    "inputSchema": {
+      "required": [],
+      "type": "object",
+      "properties": {}
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "title": "Remove broll",
+      "openWorldHint": false,
+      "idempotentHint": false,
+      "destructiveHint": true
+    },
+    "name": "remove_broll",
+    "title": "Remove broll"
+  },
+  {
+    "inputSchema": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "One of: Make it Viral, Reaction Split, Reel Pack, Photo Cards, Hook Captions, Beat Drop, Cinematic Reel"
+        }
+      },
+      "type": "object",
+      "required": [
+        "name"
+      ]
+    },
+    "title": "Apply template",
+    "name": "apply_template",
+    "description": "Apply one of Zella's one-tap looks. \"Make it Viral\" is the flagship ready-to-post pass (clean voice, captions, zooms, pacing, transitions, sound) and KEEPS the original aspect ratio. The others restyle the video: Reaction Split, Reel Pack, Photo Cards, Hook Captions, Beat Drop, Cinematic Reel. Applying the template that is already active REMOVES it.",
+    "annotations": {
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": "Apply template"
+    }
+  },
+  {
+    "inputSchema": {
+      "required": [],
+      "properties": {},
+      "type": "object"
+    },
+    "annotations": {
+      "openWorldHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "title": "Magic edit",
+      "readOnlyHint": false
+    },
+    "name": "magic_edit",
+    "title": "Magic edit",
+    "description": "One-click Auto-Polish for a talking-head video: auto-zooms, cuts silences and filler words, adds an opening title and transitions, removes noise, polishes the voice, adds a music bed. Does NOT add captions (use add_captions for that). One undo."
+  },
+  {
+    "title": "Make reel",
+    "name": "make_reel",
+    "annotations": {
+      "idempotentHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "title": "Make reel",
+      "readOnlyHint": false
+    },
+    "description": "One-click REEL PACK: assemble the whole talking-head-reel look at once - converts to a vertical 9:16 Reels canvas, energetic word-pop captions (transcribes first if needed), audio-emphasis zoom punches, and smart whip/zoom transitions at the cuts. The fastest way to turn a raw talking-head clip into an edited reel. Does NOT add photo pop-ins - the separate Photo Cards template does those.",
+    "inputSchema": {
+      "required": [],
+      "type": "object",
+      "properties": {}
+    }
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "name": "zella",
+  "displayName": "Zella",
+  "version": "0.2.0",
+  "description": "Let Claude edit videos in the Zella app on your Mac, and see the result: cut pauses, captions, voice cleanup, music, looks, zooms, blur, titles and export. Your video file stays on your Mac.",
+  "author": { "name": "Zella", "url": "https://zellahq.com" },
+  "homepage": "https://zellahq.com/docs/claude-connector/",
+  "repository": "https://github.com/shamimnasir/zella-claude-plugin",
+  "license": "MIT",
+  "keywords": ["video", "video editing", "captions", "subtitles", "mac", "zella"],
+  "icon": "./logo.png",
+  "documentationUrl": "https://zellahq.com/docs/claude-connector/",
+  "supportUrl": "https://zellahq.com/support/",
+  "privacyPolicyUrl": "https://zellahq.com/legal/privacy/",
+  "termsOfServiceUrl": "https://zellahq.com/legal/terms/",
+  "userConfig": {
+    "connection_code": {
+      "type": "string",
+      "title": "Zella connection code",
+      "description": "In Zella, choose Claude in the Zella menu, turn on Let Claude edit in Zella, then click Copy.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "zella",
+  "owner": { "name": "Zella", "url": "https://zellahq.com" },
+  "description": "The Zella plugin for Claude Code: edit videos in the Zella app on your Mac.",
+  "plugins": [
+    {
+      "name": "zella",
+      "source": "./",
+      "description": "Let Claude edit videos in the Zella app on your Mac, and see the result."
+    }
+  ]
+}
