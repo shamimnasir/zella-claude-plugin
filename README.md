@@ -61,7 +61,7 @@ Zella shows a question before it exports, deletes most of a video, or cuts silen
 ## If it does not connect
 
 - Zella must be open, with **Let Claude edit in Zella** turned on.
-- If you clicked **Make a new code** in Zella, update the code in Claude Code: run `/plugin`, open zella, and change its settings.
+- If you clicked **Make a new code** in Zella, update the code in Claude Code: run `/plugin configure zella@zella` and paste the new code.
 - Full guide: [zellahq.com/docs/claude-connector](https://zellahq.com/docs/claude-connector/). Help: [zellahq.com/support](https://zellahq.com/support/).
 
 ## License
