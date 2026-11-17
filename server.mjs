@@ -159,7 +159,7 @@ async function handle(msg) {
       return {
         protocolVersion: SUPPORTED.includes(asked) ? asked : SUPPORTED[1],
         capabilities: { tools: { listChanged: false }, prompts: { listChanged: false } },
-        serverInfo: { name: 'zella', title: 'Zella', version: '0.2.0' },
+        serverInfo: { name: 'zella', title: 'Zella', version: '0.2.1' },
         instructions: 'Zella edits the video open in the Zella app on this Mac. Call open_video first if needed, then get_project_state. After an edit, look at the result with get_frame or get_filmstrip before saying it is done. Every edit is one undo step (undo_last_action). Exports, large deletes and cleanup cuts ask the person in Zella, so tell them to look for the question. Long tools answer with a job_id: pass it to check_progress.',
       };
     }
